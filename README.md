@@ -13,4 +13,6 @@ Since we'll be sending mails I thought of using the gmail API. This involved the
  + Enable the Gmail API
  + Add a service account
  + Create a service account key
- 
+ + Delegate the e-mail sending rights of one of your GMail accounts to that service account https://developers.google.com/identity/protocols/oauth2/service-account?hl=de#delegatingauthority
+
+(maybe not, maybe we'll just have to store the actual user's credentials in JSON).
