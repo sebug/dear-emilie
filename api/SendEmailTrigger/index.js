@@ -90,7 +90,8 @@ async function sendMail(context, authenticationRequest) {
 
         const auth = new Auth.GoogleAuth({
             keyFile: path.join(os.tmpdir(), "keyfile.json"),
-            scopes: ['https://www.googleapis.com/auth/gmail.send']
+            scopes: ['https://www.googleapis.com/auth/gmail.send'],
+            subject: process.env.IMPERSONATION_EMAIL
         });
 
         const client = await auth.getClient();
