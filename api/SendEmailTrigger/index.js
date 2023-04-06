@@ -5,7 +5,6 @@ const { authenticate } = require('@google-cloud/local-auth');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const path = require('path');
 
 async function insertAuthenticationRequest(context, email) {
     try {
