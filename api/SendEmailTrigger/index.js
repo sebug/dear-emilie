@@ -93,7 +93,7 @@ async function sendMail(context, authenticationRequest) {
             scopes: ['https://www.googleapis.com/auth/gmail.send']
         });
 
-        const client = auth.getClient();
+        const client = await auth.getClient();
 
         const gmail = google.gmail({ version: 'v1', auth: client });
 
