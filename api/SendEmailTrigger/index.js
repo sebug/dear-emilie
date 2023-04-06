@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const { TableServiceClient, AzureNamedKeyCredential, TableClient } = require("@azure/data-tables");
+const { google } = require('googleapis');
+const { JWT } = require('google-auth-library');
 
 async function insertAuthenticationRequest(context, email) {
     try {
@@ -75,6 +77,43 @@ async function insertPollingRequest(context, authenticationRequestID) {
     }
 }
 
+async function sendMail(context, authenticationRequest) {
+    try {
+        const credentials = {
+            client_email: process.env.CLIENT_EMAIL,
+            private_key: process.env.PRIVATE_KEY,
+          };
+
+        const auth = new JWT({
+        email: credentials.client_email,
+        key: credentials.private_key,
+        scopes: ['https://www.googleapis.com/auth/gmail.send'],
+        });
+
+        const gmail = google.gmail({ version: 'v1', auth });
+
+        const message = [
+            'Content-Type: text/html; charset=utf-8',
+            'To: ' + authenticationRequest.email,
+            'Subject: Sign in link for Dear Emilie',
+            '',
+            'Here is the sign in link you requested: ' + process.env.SIGN_IN_URL +
+                '?id=' + authenticationRequest.rowKey
+        ].join('\n');
+
+        const res = await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+              raw: Buffer.from(message).toString('base64'),
+            }
+        });
+        return res;
+    } catch (err) {
+        context.log(err);
+        throw err;
+    }
+}
+
 module.exports = async function (context, req) {
     try {
         context.log('Send e-mail HTTP trigger function processed a request.');
@@ -105,11 +144,11 @@ module.exports = async function (context, req) {
         // to log in secret
         const pollingRequest = await insertPollingRequest(context, authenticationRequest.rowKey);
 
-        const responseMessage = 'Hello ' + email + ' ' + pollingRequest.rowKey;
+        const sendEmailResult = await sendMail(context, authenticationRequest);
     
         context.res = {
             // status: 200, /* Defaults to 200 */
-            body: responseMessage
+            body: sendEmailResult
         };
     } catch (err) {
         context.res = {
