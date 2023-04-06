@@ -83,10 +83,10 @@ async function sendMail(context, authenticationRequest) {
         const credentialsBytes = Uint8Array.from(atob(credentialsBase64), c => c.charCodeAt(0));
         const credentialsString = new TextDecoder().decode(credentialsBytes);
 
-        const credentials = JSON.parse(credentialsString);
-        credentials.scopes = ['https://www.googleapis.com/auth/gmail.send'];
-
-        const auth = new JWT(credentials);
+        const auth = new JWT({
+            key: credentialsString,
+            scopes: ['https://www.googleapis.com/auth/gmail.send']
+        });
 
         const gmail = google.gmail({ version: 'v1', auth });
 
