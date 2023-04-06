@@ -79,16 +79,14 @@ async function insertPollingRequest(context, authenticationRequestID) {
 
 async function sendMail(context, authenticationRequest) {
     try {
-        const credentials = {
-            client_email: process.env.CLIENT_EMAIL,
-            private_key: process.env.PRIVATE_KEY,
-          };
+        const credentialsBase64 = process.env.CLIENT_SECRET;
+        const credentialsBytes = Uint8Array.from(atob(credentialsBase64), c => c.charCodeAt(0));
+        const credentialsString = new TextDecoder().decode(credentialsBytes);
 
-        const auth = new JWT({
-        email: credentials.client_email,
-        key: credentials.private_key,
-        scopes: ['https://www.googleapis.com/auth/gmail.send'],
-        });
+        const credentials = JSON.parse(credentialsString);
+        credentials.scopes = ['https://www.googleapis.com/auth/gmail.send'];
+
+        const auth = new JWT(credentials);
 
         const gmail = google.gmail({ version: 'v1', auth });
 
