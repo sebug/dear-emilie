@@ -96,6 +96,8 @@ async function sendMail(context, authenticationRequest) {
 
         const client = await auth.getClient();
 
+        await client.authorize();
+
         const gmail = google.gmail({ version: 'v1', auth: client });
 
         const message = [
