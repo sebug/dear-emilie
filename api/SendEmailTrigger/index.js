@@ -19,7 +19,7 @@ async function insertAuthenticationRequest(context, email) {
         await serviceClient.createTable(tableName, {
             onResponse: (response) => {
                 if (response.status === 409) {
-                    context.log('Table challenges already exists');
+                    context.log('Table authenticationrequests already exists');
                 }
             }
         });
@@ -29,6 +29,43 @@ async function insertAuthenticationRequest(context, email) {
             partitionKey: "Prod",
             rowKey: uuidv4(),
             email: email
+        };
+        await tableClient.createEntity(entity);
+        return entity;
+    } catch (err) {
+        context.log(err);
+        throw err;
+    }
+}
+
+async function insertPollingRequest(context, authenticationRequestID) {
+    try {
+        const account = process.env.TABLES_STORAGE_ACCOUNT_NAME;
+        const accountKey = process.env.TABLES_PRIMARY_STORAGE_ACCOUNT_KEY;
+        const suffix = process.env.TABLES_STORAGE_ENDPOINT_SUFFIX;
+    
+        const url = 'https://' + account + '.table.' + suffix;
+    
+        const credential = new AzureNamedKeyCredential(account, accountKey);
+        const serviceClient = new TableServiceClient(
+            url,
+            credential
+        );
+    
+        const tableName = 'pollingrequests';
+        await serviceClient.createTable(tableName, {
+            onResponse: (response) => {
+                if (response.status === 409) {
+                    context.log('Table pollingrequests already exists');
+                }
+            }
+        });
+        const tableClient = new TableClient(url, tableName, credential);
+
+        let entity = {
+            partitionKey: "Prod",
+            rowKey: uuidv4(),
+            authenticationRequestID: authenticationRequestID
         };
         await tableClient.createEntity(entity);
         return entity;
@@ -64,7 +101,11 @@ module.exports = async function (context, req) {
 
         const authenticationRequest = await insertAuthenticationRequest(context, email);
 
-        const responseMessage = 'Hello ' + email + ' ' + authenticationRequest.rowKey;
+        // decouple the polling ID from the authentication request so that we can keep the link sent
+        // to log in secret
+        const pollingRequest = await insertPollingRequest(context, authenticationRequest.rowKey);
+
+        const responseMessage = 'Hello ' + email + ' ' + pollingRequest.rowKey;
     
         context.res = {
             // status: 200, /* Defaults to 200 */
