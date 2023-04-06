@@ -108,8 +108,8 @@ async function sendMail(context, authenticationRequest) {
 
         const res = await gmail.users.messages.send({
             userId: 'me',
-            requestBody: {
-              raw: Buffer.from(message).toString('base64'),
+            resource: {
+              raw: Buffer.from(message).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
             }
         });
         return res;
