@@ -1,7 +1,11 @@
 const { v4: uuidv4 } = require('uuid');
 const { TableServiceClient, AzureNamedKeyCredential, TableClient } = require("@azure/data-tables");
-const { google } = require('googleapis');
-const { JWT, auth } = require('google-auth-library');
+const { Auth, google } = require('googleapis');
+const { authenticate } = require('@google-cloud/local-auth');
+const path = require('path');
+const fs = require('fs').promises;
+const os = require('os');
+const path = require('path');
 
 async function insertAuthenticationRequest(context, email) {
     try {
@@ -83,10 +87,14 @@ async function sendMail(context, authenticationRequest) {
         const credentialsBytes = Uint8Array.from(atob(credentialsBase64), c => c.charCodeAt(0));
         const credentialsString = new TextDecoder().decode(credentialsBytes);
 
-        const credentials = JSON.parse(credentialsString);
-        credentials.scopes = ['https://www.googleapis.com/auth/gmail.send'];
+        await fs.writeFile(path.join(os.tmpdir(), "keyfile.json"), credentialsString);
 
-        const client = auth.fromJSON(credentials);
+        const auth = new Auth.GoogleAuth({
+            keyFile: path.join(os.tmpdir(), "keyfile.json"),
+            scopes: ['https://www.googleapis.com/auth/gmail.send']
+        });
+
+        const client = auth.getClient();
 
         const gmail = google.gmail({ version: 'v1', auth: client });
 
