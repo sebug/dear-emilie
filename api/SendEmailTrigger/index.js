@@ -82,23 +82,11 @@ async function insertPollingRequest(context, authenticationRequestID) {
 
 async function sendMail(context, authenticationRequest) {
     try {
-        const credentialsBase64 = process.env.CLIENT_SECRET;
-        const credentialsBytes = Uint8Array.from(atob(credentialsBase64), c => c.charCodeAt(0));
-        const credentialsString = new TextDecoder().decode(credentialsBytes);
+        const token = JSON.parse(process.env.GMAIL_TOKEN);
 
-        await fs.writeFile(path.join(os.tmpdir(), "keyfile.json"), credentialsString);
+        const auth = google.auth.fromJSON(token);
 
-        const auth = new Auth.GoogleAuth({
-            keyFile: path.join(os.tmpdir(), "keyfile.json"),
-            scopes: ['https://www.googleapis.com/auth/gmail.send'],
-            subject: process.env.IMPERSONATION_EMAIL
-        });
-
-        const client = await auth.getClient();
-
-        await client.authorize();
-
-        const gmail = google.gmail({ version: 'v1', auth: client });
+        const gmail = google.gmail({ version: 'v1', auth: auth });
 
         const message = [
             'Content-Type: text/html; charset=utf-8',
