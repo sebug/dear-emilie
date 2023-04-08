@@ -1,3 +1,20 @@
+const waitFor = (milliseconds) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, milliseconds);
+    });
+};
+
+const pollForAuthenticated = async (pollingRequestID, iterationsRemaining) => {
+    console.log('Polling request ' + pollingRequestID + ' iteration ' + iterationsRemaining);
+    await waitFor(1000);
+    if (iterationsRemaining <= 0) {
+        // maybe show an error message?
+        return;
+    } else {
+        await pollForAuthenticated(pollingRequestID, iterationsRemaining - 1);
+    }
+};
+
 const startLogin = async (email) => {
     const sendEmailResponse = await fetch('/api/SendEmailTrigger', {
         method: 'POST',
@@ -9,7 +26,13 @@ const startLogin = async (email) => {
         })
     });
     const sendEmailText = await sendEmailResponse.text();
-    alert(sendEmailText);
+    if (sendEmailResponse.status !== 200) {
+        alert(sendEmailText);
+        return;
+    }
+    const asJSON = JSON.parse(sendEmailText);
+    const pollingRequestID = asJSON.pollingRequestID;
+    await pollForAuthenticated(pollingRequestID, 120);
 }
 
 const loginForm = document.querySelector('#login');
