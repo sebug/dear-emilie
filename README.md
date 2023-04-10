@@ -11,7 +11,7 @@ Since we'll be sending mails I thought of using the gmail API. This involved the
 
  + In the Google Cloud Console, create a new project
  + Enable the Gmail API
- + Add a service account
+ + Set up OAuth (as a native application), see code in get-token
  + Create a service account key
  + Delegate the e-mail sending rights of one of your GMail accounts to that service account https://developers.google.com/identity/protocols/oauth2/service-account?hl=de#delegatingauthority
 

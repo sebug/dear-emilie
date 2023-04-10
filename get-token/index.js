@@ -70,11 +70,11 @@ async function authorize() {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-async function sendMail(auth) {
+async function sendMail(auth, email) {
     const gmail = google.gmail({version: 'v1', auth});
     const message = [
             'Content-Type: text/html; charset=utf-8',
-        'To: sebastian.gfeller@gmail.com',
+        'To: ' + email,
             'Subject: Sign in link for Dear Emilie',
             '',
             'Here is the sign in link you requested: '
@@ -88,4 +88,6 @@ async function sendMail(auth) {
         });
 }
 
-authorize().then(sendMail).catch(console.error);
+authorize().then(auth => {
+    return sendMail(auth, process.argv[1]);
+}).catch(console.error);
