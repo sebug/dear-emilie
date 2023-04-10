@@ -1,3 +1,5 @@
+const getTableClient = require('../shared/getTableClient.js');
+
 module.exports = async function (context, req) {
     context.log('Sign in HTTP trigger function processed a request.');
 

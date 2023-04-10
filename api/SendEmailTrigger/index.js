@@ -5,30 +5,11 @@ const { authenticate } = require('@google-cloud/local-auth');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
+const getTableClient = require('../shared/getTableClient.js');
 
 async function insertAuthenticationRequest(context, email) {
     try {
-        const account = process.env.TABLES_STORAGE_ACCOUNT_NAME;
-        const accountKey = process.env.TABLES_PRIMARY_STORAGE_ACCOUNT_KEY;
-        const suffix = process.env.TABLES_STORAGE_ENDPOINT_SUFFIX;
-    
-        const url = 'https://' + account + '.table.' + suffix;
-    
-        const credential = new AzureNamedKeyCredential(account, accountKey);
-        const serviceClient = new TableServiceClient(
-            url,
-            credential
-        );
-    
-        const tableName = 'authenticationrequests';
-        await serviceClient.createTable(tableName, {
-            onResponse: (response) => {
-                if (response.status === 409) {
-                    context.log('Table authenticationrequests already exists');
-                }
-            }
-        });
-        const tableClient = new TableClient(url, tableName, credential);
+        const tableClient = await getTableClient(context, 'authenticationrequests');
 
         let entity = {
             partitionKey: "Prod",
@@ -45,28 +26,7 @@ async function insertAuthenticationRequest(context, email) {
 
 async function insertPollingRequest(context, authenticationRequestID) {
     try {
-        const account = process.env.TABLES_STORAGE_ACCOUNT_NAME;
-        const accountKey = process.env.TABLES_PRIMARY_STORAGE_ACCOUNT_KEY;
-        const suffix = process.env.TABLES_STORAGE_ENDPOINT_SUFFIX;
-    
-        const url = 'https://' + account + '.table.' + suffix;
-    
-        const credential = new AzureNamedKeyCredential(account, accountKey);
-        const serviceClient = new TableServiceClient(
-            url,
-            credential
-        );
-    
-        const tableName = 'pollingrequests';
-        await serviceClient.createTable(tableName, {
-            onResponse: (response) => {
-                if (response.status === 409) {
-                    context.log('Table pollingrequests already exists');
-                }
-            }
-        });
-        const tableClient = new TableClient(url, tableName, credential);
-
+        const tableClient = await getTableClient(context, 'pollingrequests');
         let entity = {
             partitionKey: "Prod",
             rowKey: uuidv4(),
@@ -80,9 +40,22 @@ async function insertPollingRequest(context, authenticationRequestID) {
     }
 }
 
+async function getTokenContent(context) {
+    const tableClient = await getTableClient(context, 'tokens');
+
+    const entity = await tableClient.getEntity('Prod', 'email_sender');
+
+    return {
+        type: 'authorized_user',
+        client_id: entity.client_id,
+        client_secret: entity.client_secret,
+        refresh_token: entity.refresh_token
+    };
+}
+
 async function sendMail(context, authenticationRequest) {
     try {
-        const token = JSON.parse(process.env.GMAIL_TOKEN);
+        const token = await getTokenContent();
 
         const auth = google.auth.fromJSON(token);
 
