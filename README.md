@@ -12,7 +12,7 @@ Since we'll be sending mails I thought of using the gmail API. This involved the
  + In the Google Cloud Console, create a new project
  + Enable the Gmail API
  + Set up OAuth (as a native application), see code in get-token
- + Create a service account key
- + Delegate the e-mail sending rights of one of your GMail accounts to that service account https://developers.google.com/identity/protocols/oauth2/service-account?hl=de#delegatingauthority
+ + Run the get-token code with the OAuth credentials downloaded from the project. Save the content of token.json in the environment variable GMAIL_TOKEN
 
-(maybe not, maybe we'll just have to store the actual user's credentials in JSON).
+This points to a very important caveat that I didn't know when starting: you can't send mails from a service account, you either have to delegate the rights to a service account to send mails on behalf of a member of your organization, or you can do like I did and use your client credentials by obtaining a token using the interactive flow.
+
