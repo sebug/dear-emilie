@@ -59,7 +59,7 @@ async function sendMail(context, authenticationRequest) {
 
         const auth = google.auth.fromJSON(token);
 
-        const tokenInfo = auth.getTokenInfo(JSON.stringify(token));
+        const tokenInfo = await auth.getTokenInfo(JSON.stringify(token));
 
         context.log('Token info');
         context.log(tokenInfo);
