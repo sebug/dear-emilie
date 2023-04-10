@@ -55,7 +55,7 @@ async function getTokenContent(context) {
 
 async function sendMail(context, authenticationRequest) {
     try {
-        const token = await getTokenContent();
+        const token = await getTokenContent(context);
 
         const auth = google.auth.fromJSON(token);
 
