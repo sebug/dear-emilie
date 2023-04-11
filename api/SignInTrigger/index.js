@@ -57,6 +57,14 @@ module.exports = async function (context, req) {
 
         const dateDiff = new Date() - new Date(authenticationRequest.timestamp);
 
+        if (dateDiff > 24 * 60 * 60 * 1000) {
+            context.res = {
+                status: 403,
+                body: 'sign in link expired'
+            };
+            return;
+        }
+
         const session = await createSession(context, authenticationRequest.email);
     
         authenticationRequest.clickedDate = new Date();
