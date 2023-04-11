@@ -8,6 +8,15 @@ async function getAuthenticationRequest(context, id) {
     return entity;
 }
 
+
+async function updateAuthenticationRequest(context, authenticationRequest) {
+    const tableClient = await getTableClient(context, 'authenticationrequests');
+
+    await tableClient.updateEntity(authenticationRequest);
+
+    return authenticationRequest;
+}
+
 module.exports = async function (context, req) {
     context.log('Sign in HTTP trigger function processed a request.');
 
@@ -22,6 +31,10 @@ module.exports = async function (context, req) {
         };
         return;
     }
+
+    authenticationRequest.clickedDate = new Date();
+
+    authenticationRequest = await updateAuthenticationRequest(context, authenticationRequest);
 
     context.res = {
         // status: 200, /* Defaults to 200 */
