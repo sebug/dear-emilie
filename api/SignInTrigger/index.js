@@ -12,7 +12,7 @@ async function getAuthenticationRequest(context, id) {
 async function updateAuthenticationRequest(context, authenticationRequest) {
     const tableClient = await getTableClient(context, 'authenticationrequests');
 
-    await tableClient.updateEntity(authenticationRequest);
+    await tableClient.updateEntity(authenticationRequest, 'Merge');
 
     return authenticationRequest;
 }
