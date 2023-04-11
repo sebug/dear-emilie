@@ -17,6 +17,12 @@ async function getPollingRequest(context, id) {
     return entity;
 }
 
+async function deletePollingRequest(context, id) {
+    const tableClient = await getTableClient(context, 'pollingrequests');
+
+    await tableClient.deleteEntity('Prod', id);
+}
+
 async function createSession(context, email) {
     const tableClient = await getTableClient(context, 'sessions');
 
@@ -74,6 +80,9 @@ module.exports = async function (context, req) {
             };
             return;
         }
+
+        // we have a clicked date, remove the polling request
+        await deletePollingRequest(context, pollingRequestID);
     
         const dateDiff = new Date() - new Date(authenticationRequest.timestamp);
     
