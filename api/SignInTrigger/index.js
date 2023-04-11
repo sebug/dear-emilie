@@ -47,6 +47,14 @@ module.exports = async function (context, req) {
             return;
         }
 
+        if (authenticationRequest.sessionID) {
+            context.res = {
+                status: 403,
+                body: 'Already used'
+            };
+            return;
+        }
+
         const session = await createSession(context, authenticationRequest.email);
     
         authenticationRequest.clickedDate = new Date();
@@ -58,7 +66,8 @@ module.exports = async function (context, req) {
         context.res = {
             // status: 200, /* Defaults to 200 */
             body: {
-                sessionID: session.rowKey
+                sessionID: session.rowKey,
+                timestampType: (typeof authenticationRequest.timestamp)
             }
         };
     } catch (e) {
