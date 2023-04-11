@@ -18,26 +18,33 @@ async function updateAuthenticationRequest(context, authenticationRequest) {
 }
 
 module.exports = async function (context, req) {
-    context.log('Sign in HTTP trigger function processed a request.');
+    try {
+        context.log('Sign in HTTP trigger function processed a request.');
 
-    const id = req.query.id;
-
-    const authenticationRequest = await getAuthenticationRequest(context, id);
-
-    if (!authenticationRequest) {
+        const id = req.query.id;
+    
+        const authenticationRequest = await getAuthenticationRequest(context, id);
+    
+        if (!authenticationRequest) {
+            context.res = {
+                status: 403,
+                body: 'Not Authorized'
+            };
+            return;
+        }
+    
+        authenticationRequest.clickedDate = new Date();
+    
+        authenticationRequest = await updateAuthenticationRequest(context, authenticationRequest);
+    
         context.res = {
-            status: 403,
-            body: 'Not Authorized'
+            // status: 200, /* Defaults to 200 */
+            body: authenticationRequest
         };
-        return;
+    } catch (e) {
+        context.res = {
+            status: 500,
+            body: '' + e
+        };
     }
-
-    authenticationRequest.clickedDate = new Date();
-
-    authenticationRequest = await updateAuthenticationRequest(context, authenticationRequest);
-
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: authenticationRequest
-    };
 }
