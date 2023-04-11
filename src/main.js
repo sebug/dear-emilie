@@ -51,8 +51,13 @@ const itsMe = async () => {
         return;
     }
     const signInResponse = await fetch('/api/SignInTrigger?id=' + params.get('id'));
-    const singInText = await signInResponse.text();
-    alert(singInText);
+    if (signInResponse.status !== 200) {
+        const errorText = await signInResponse.text();
+        alert(errorText);
+        return;
+    }
+    const signInContent = await signInResponse.json();
+    location.href = '/logged_in.html?id=' + signInContent.sessionID;
 };
 
 const itsMeForm = document.querySelector('#itsme');
