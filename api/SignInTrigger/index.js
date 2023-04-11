@@ -22,7 +22,7 @@ module.exports = async function (context, req) {
 
     const id = req.query.id;
 
-    const authenticationRequest = await getAuthenticationRequest();
+    const authenticationRequest = await getAuthenticationRequest(context);
 
     if (!authenticationRequest) {
         context.res = {
