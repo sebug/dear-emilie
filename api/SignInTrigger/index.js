@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const getTableClient = require('../shared/getTableClient.js');
 
 async function getAuthenticationRequest(context, id) {
@@ -17,6 +18,19 @@ async function updateAuthenticationRequest(context, authenticationRequest) {
     return authenticationRequest;
 }
 
+async function createSession(context, email) {
+    const tableClient = await getTableClient(context, 'sessions');
+
+    let session = {
+        partitionKey: 'Prod',
+        rowKey: uuidv4(),
+        email: email
+    };
+
+    tableClient.createEntity(session);
+    return session;
+}
+
 module.exports = async function (context, req) {
     try {
         context.log('Sign in HTTP trigger function processed a request.');
@@ -32,14 +46,20 @@ module.exports = async function (context, req) {
             };
             return;
         }
+
+        const session = await createSession(context, authenticationRequest.email);
     
         authenticationRequest.clickedDate = new Date();
+
+        authenticationRequest.sessionID = session.rowKey;
     
         authenticationRequest = await updateAuthenticationRequest(context, authenticationRequest);
     
         context.res = {
             // status: 200, /* Defaults to 200 */
-            body: authenticationRequest
+            body: {
+                sessionID: session.rowKey
+            }
         };
     } catch (e) {
         context.res = {
