@@ -55,6 +55,8 @@ module.exports = async function (context, req) {
             return;
         }
 
+        const dateDiff = new Date() - new Date(authenticationRequest.timestamp);
+
         const session = await createSession(context, authenticationRequest.email);
     
         authenticationRequest.clickedDate = new Date();
@@ -67,7 +69,7 @@ module.exports = async function (context, req) {
             // status: 200, /* Defaults to 200 */
             body: {
                 sessionID: session.rowKey,
-                timestampType: (typeof authenticationRequest.timestamp)
+                dateDiffSeconds: Math.floor(dateDiff / 1000)
             }
         };
     } catch (e) {
