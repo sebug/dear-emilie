@@ -44,3 +44,22 @@ if (loginForm) {
         ev.preventDefault();
     });
 }
+
+const itsMe = async () => {
+    const params = new URLSearchParams(location.search);
+    if (!params.get('id')) {
+        return;
+    }
+    const signInResponse = await fetch('/api/SignInTrigger?id=' + params.get('id'));
+    const singInText = await signInResponse.text();
+    alert(singInText);
+};
+
+const itsMeForm = document.querySelector('#itsme');
+if (itsMeForm) {
+    itsMeForm.addEventListener('submit', ev => {
+        itsMe();
+        ev.preventDefault();
+    });
+}
+
