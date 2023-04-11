@@ -68,7 +68,9 @@ module.exports = async function (context, req) {
             // okay, but not ready yet
             context.res = {
                 status: 200,
-                sessionID: null
+                body: {
+                    sessionID: null
+                }
             };
             return;
         }
