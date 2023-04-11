@@ -6,6 +6,17 @@ const waitFor = (milliseconds) => {
 
 const pollForAuthenticated = async (pollingRequestID, iterationsRemaining) => {
     console.log('Polling request ' + pollingRequestID + ' iteration ' + iterationsRemaining);
+    const pollResponse = await fetch('/api/PollSignedInTrigger?id=' + pollingRequestID);
+    if (pollResponse.status !== 200) {
+        const errorText = await pollResponse.text();
+        alert(errorText);
+        return;
+    }
+    const pollObject = await pollResponse.json();
+    if (pollObject.sessionID) {
+        location.href = '/logged_in.html?id=' + pollObject.sessionID;
+        return;
+    }
     await waitFor(1000);
     if (iterationsRemaining <= 0) {
         // maybe show an error message?
