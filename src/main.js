@@ -38,6 +38,7 @@ const startLogin = async (email) => {
         console.log(window.keyPair);
         publicKeyInformation = await crypto.subtle.exportKey('jwk', window.keyPair.publicKey);
         let textEncoder = new TextEncoder();
+        textWithSignature = {};
         textWithSignature.text = 'Hello signature: ' + crypto.randomUUID();
         let signature = await crypto.subtle.sign({
             name: 'ECDSA',
@@ -46,7 +47,6 @@ const startLogin = async (email) => {
             }
         }, window.keyPair.privateKey,
         textEncoder.encode(textWithSignature.text));
-        textWithSignature = {};
         textWithSignature.signature = btoa(String.fromCharCode.apply(null, new Uint8Array(signature)));
 
         console.log(publicKeyInformation);
