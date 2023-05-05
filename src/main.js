@@ -27,13 +27,27 @@ const pollForAuthenticated = async (pollingRequestID, iterationsRemaining) => {
 };
 
 const startLogin = async (email) => {
+    let publicKeyInformation = null;
+
+    try {
+        window.keyPair = await crypto.subtle.generateKey({
+            name: 'ECDSA',
+            namedCurve: 'P-256'
+        }, true, ['sign', 'verify']);
+        console.log(window.keyPair);
+        publicKeyInformation = crypto.subtle.exportKey('jwk', window.keyPair.publicKey);
+    } catch (e) {
+        console.log('Creating public key failed - we will have to do without polling');
+    }
+
     const sendEmailResponse = await fetch('/api/SendEmailTrigger', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            email: email
+            email: email,
+            publicKeyInformation: publicKeyInformation
         })
     });
     const sendEmailText = await sendEmailResponse.text();
@@ -43,7 +57,10 @@ const startLogin = async (email) => {
     }
     const asJSON = JSON.parse(sendEmailText);
     const pollingRequestID = asJSON.pollingRequestID;
-    await pollForAuthenticated(pollingRequestID, 120);
+    if (pollingRequestID) {
+        // may not get one if we didn't provide a public key for signature verification
+        await pollForAuthenticated(pollingRequestID, 120);
+    }
 }
 
 const loginForm = document.querySelector('#login');
