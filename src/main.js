@@ -28,6 +28,7 @@ const pollForAuthenticated = async (pollingRequestID, iterationsRemaining) => {
 
 const startLogin = async (email) => {
     let publicKeyInformation = null;
+    let textWithSignature = null;
 
     try {
         window.keyPair = await crypto.subtle.generateKey({
@@ -36,7 +37,19 @@ const startLogin = async (email) => {
         }, true, ['sign', 'verify']);
         console.log(window.keyPair);
         publicKeyInformation = await crypto.subtle.exportKey('jwk', window.keyPair.publicKey);
+        let textEncoder = new TextEncoder();
+        textWithSignature.text = 'Hello signature: ' + crypto.randomUUID();
+        let signature = await crypto.subtle.sign({
+            name: 'ECDSA',
+            hash: {
+                name: 'SHA-256'
+            }
+        }, window.keyPair.privateKey,
+        textEncoder.encode(textWithSignature.text));
+        textWithSignature.signature = btoa(String.fromCharCode.apply(null, new Uint8Array(signature)));
+
         console.log(publicKeyInformation);
+        console.log(textWithSignature);
     } catch (e) {
         console.log('Creating public key failed - we will have to do without polling');
     }
@@ -48,7 +61,8 @@ const startLogin = async (email) => {
         },
         body: JSON.stringify({
             email: email,
-            publicKeyInformation: publicKeyInformation
+            publicKeyInformation: publicKeyInformation,
+            textWithSignature: textWithSignature
         })
     });
     const sendEmailText = await sendEmailResponse.text();
