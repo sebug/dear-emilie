@@ -107,6 +107,17 @@ module.exports = async function (context, req) {
             return;
         }
 
+        if (req.body.publicKeyInformation && req.body.textWithSignature) {
+            const keyToVerifySignatureWith = await crypto.subtle.importKey('jwk', req.body.publicKeyInformation,
+            {
+                name: 'ECDSA',
+                namedCurve: 'P-256'
+            },
+            true,
+            ['verify']);
+            context.log(keyToVerifySignatureWith);
+        }
+
         const authenticationRequest = await insertAuthenticationRequest(context, email);
 
         // decouple the polling ID from the authentication request so that we can keep the link sent
