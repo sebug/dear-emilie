@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 const getTableClient = require('../shared/getTableClient.js');
+const { subtle } = require('crypto').webcrypto;
 
 async function insertAuthenticationRequest(context, email) {
     try {
@@ -108,7 +109,7 @@ module.exports = async function (context, req) {
         }
 
         if (req.body.publicKeyInformation && req.body.textWithSignature) {
-            const keyToVerifySignatureWith = await crypto.subtle.importKey('jwk', req.body.publicKeyInformation,
+            const keyToVerifySignatureWith = await subtle.importKey('jwk', req.body.publicKeyInformation,
             {
                 name: 'ECDSA',
                 namedCurve: 'P-256'
