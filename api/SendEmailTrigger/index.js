@@ -133,6 +133,13 @@ module.exports = async function (context, req) {
             }
         };
     } catch (err) {
+        if (JSON.stringify(err) === '{}') {
+            context.res = {
+                status: 500,
+                body: '' + err
+            };
+            return;
+        }
         context.res = {
             status: 500,
             body: err
