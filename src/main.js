@@ -46,6 +46,7 @@ const startLogin = async (email) => {
             }
         }, window.keyPair.privateKey,
         textEncoder.encode(textWithSignature.text));
+        textWithSignature = {};
         textWithSignature.signature = btoa(String.fromCharCode.apply(null, new Uint8Array(signature)));
 
         console.log(publicKeyInformation);
