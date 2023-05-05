@@ -35,7 +35,7 @@ const startLogin = async (email) => {
             namedCurve: 'P-256'
         }, true, ['sign', 'verify']);
         console.log(window.keyPair);
-        publicKeyInformation = crypto.subtle.exportKey('jwk', window.keyPair.publicKey);
+        publicKeyInformation = await crypto.subtle.exportKey('jwk', window.keyPair.publicKey);
         console.log(publicKeyInformation);
     } catch (e) {
         console.log('Creating public key failed - we will have to do without polling');
